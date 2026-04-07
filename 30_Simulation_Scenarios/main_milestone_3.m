@@ -9,6 +9,9 @@ dt = 0.05;
 t_max = 60;             
 N_steps = t_max / dt;
 
+plot_field = true;
+
+
 % N=5 Robots: Initialized in a random cluster
 q = [-6, -6, -5, -7, -5;   % x
       0,  1, -1,  2, -2;   % y
@@ -18,21 +21,28 @@ N_robots = size(q, 2);
 p_flock_goal = [6; 0]; % The whole formation drives here
 
 l = 0.2;                
-v_max = 1.2;            
+v_max = 1.8;            
 w_max = 2.5;            
 robot_radius = 0.2;     
 
 % APF Parameters
-params.k_form = 3.5;    % Strong drive to hold formation
-params.k_att = 0.7;     % Weak drive to global goal
+params.k_form = 1.5;    % Strong drive to hold formation
+params.k_att = 1.9;     % Weak drive to global goal
 params.k_rep = 1.0;
-params.k_vortex = 0.0;  
+params.k_vortex = 0.0;       
+params.k_conn = 0.8; 
+
+params.k_form   = 0.705;
+params.k_att    = 1.495;
+params.k_rep    = 0.467;
+params.k_vortex = 2.999;
+params.k_conn   = 0.541;
+
 params.d0 = 1.5;        
-params.d_th = 1.2;      
-params.k_conn = 0.8;    
+params.d_th = 1.5; 
 
 % Environment: Cluttered warehouse map
-obstacles = [ 0,  1.5, 0.8; 
+obstacles = [ 0,  1.8, 0.8; 
               0, -1.8, 0.8;
               0, -2.8, 0.8;
               0, -3.8, 0.8;
@@ -56,8 +66,13 @@ end
 %% 3. Setup Figure
 figure('Name', 'Milestone 3: V-Formation Navigation', 'Position', [100, 100, 800, 500]);
 plot_environment(obstacles, bounds);
-plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
 
+% Draw the vector field in the background
+if plot_field
+    plot_vector_field(p_flock_goal, obstacles, params, bounds);
+end 
+
+plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
 %% 4. Simulation Loop
 for k = 1:N_steps
     % Calculate Look-ahead points
@@ -83,6 +98,12 @@ for k = 1:N_steps
     if mod(k, 2) == 0 
         cla; 
         plot_environment(obstacles, bounds);
+        
+        % ADD THE VECTOR FIELD RE-DRAW HERE
+        if plot_field
+            plot_vector_field(p_flock_goal, obstacles, params, bounds);
+        end
+
         plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
         
         for e = 1:size(edges, 1)

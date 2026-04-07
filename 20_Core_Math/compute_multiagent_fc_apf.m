@@ -18,10 +18,18 @@ function u_v = compute_multiagent_apf(i, p_v_all, p_flock_goal, obstacles, A, De
         end
     end
     
-    % Weak global pull so the whole formation moves across the map
-    F_global = -params.k_att * (p_v - p_flock_goal);
+    % LEADER-FOLLOWER ARCHITECTURE
+    % Only Robot 1 (The Tip) knows about the global goal.
+    % The others are blind followers driven strictly by F_form.
+    if i == 1
+        F_global = -params.k_att * (p_v - p_flock_goal);
+    else
+        F_global = [0; 0];
+    end
+    
     F_att = F_form + F_global;
     
+
     F_rep = [0; 0];
     F_vortex = [0; 0];
     
@@ -39,7 +47,7 @@ function u_v = compute_multiagent_apf(i, p_v_all, p_flock_goal, obstacles, A, De
             F_rep_k = rep_mag * grad_d;
             
             % 90-degree CCW rotation for the vortex
-            R_90 = [0, -1; 1, 0];
+            R_90 = [0, 1; -1, 0];
             F_vortex_k = params.k_vortex * R_90 * F_rep_k;
             
             F_rep = F_rep + F_rep_k;
