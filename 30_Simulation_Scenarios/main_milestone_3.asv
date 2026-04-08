@@ -1,88 +1,107 @@
-% main_milestone_4_stress_test.m
+% main_milestone_3.m
 clear; clc; close all;
 
 addpath('../20_Core_Math');
 addpath('../40_Utilities');
+addpath('../50_Optimzation');
 
-%% 1. Initialization - The Expanded Map
+%% 1. Initialization
 dt = 0.05;              
-t_max = 90; % Give them more time for the larger map             
+t_max = 60;             
 N_steps = t_max / dt;
+
 plot_field = true;
 
-% N=5 Robots: Initialized far left
-q = [-10.0, -10.2, -10.2, -10.4, -10.4;  
-       0.0,   0.5,  -0.5,   1.0,  -1.0;   
-       0.0,   0.0,   0.0,   0.0,   0.0];  
-N_robots = size(q, 2);
-start_pos = [-10; 0];
 
-% The goal is now far right
-p_flock_goal = [10; 0]; 
+% N=5 Robots: Initialized in a random cluster
+q = [-6, -6, -5, -7, -5;   % x
+      0,  1, -1,  2, -2;   % y
+      0,  0,  0,  0,  0];  % theta
+N_robots = size(q, 2);
+
+p_flock_goal = [6; 0]; % The whole formation drives here
 
 l = 0.2;                
 v_max = 1.8;            
 w_max = 2.5;            
 robot_radius = 0.2;     
 
+% APF Parameters (Normalized Math Baseline)
+params.d0 = 1.5;        
+params.d_th = 1.8;
 
-params.k_form   = 40.823;
+
+params.k_form   = 80.823;
 params.k_att    = 39.610;
 params.k_rep    = 1.060;
 params.k_vortex = 0.337;
 params.k_conn   = 2.902;
 
-params.k_form   = 26.327;
+params.k_form   = 16.327;
 params.k_att    = 32.240;
 params.k_rep    = 2.100;
 params.k_vortex = 0.214;
 params.k_conn   = 17.679;
 
-params.d0 = 1.5;        
-params.d_th = 1.8;
 
-start_pos = [-10; 0];
 
-% params.k_form   = 33.224;
-% params.k_att    = 49.185;
-% params.k_rep    = 1.143;
-% params.k_vortex = 0.871;
-% params.k_conn   = 9.832;
+% Environment: Cluttered warehouse map
+obstacles = [ 0, 2.8, 0.8;
+              0, 3.8, 0.8;
+              0, 4.8, 0.8;
+              0,  1.4, 0.8;
+              %0,  0.0, 0.8;
+              0, -1.8, 0.8;
+              0, -2.8, 0.8;
+              0, -3.8, 0.8;
+              0, -4.8, 0.8;];
 
-% Generate the Random Asteroid Field
-N_obstacles = 32;
-max_obs_dist = 0.5; % The choke-point constraint
-obstacles = generate_clustered_obstacles(N_obstacles, max_obs_dist, start_pos, p_flock_goal);
-bounds = [-12, 12, -8, 8];
+%obstacles = [ 0, 0, 2.8];
+%obstacles = [ 1, 1.5, 1.0; 1, -1.5, 1.0;  3, 0.0, 0.8];
 
-%% 2. Define the V-Formation
-V_shape = [ 0.0, -1.0, -1.0, -2.0, -2.0;  
-            0.0,  1.0, -1.0,  2.0, -2.0] * 0.6; 
+
+
+
+
+bounds = [-8, 8, -5, 5];
+
+%% 2. Define the V-Formation Delta Matrix
+% Node 1 is the tip. Nodes 2,4 are top wing. Nodes 3,5 are bottom wing.
+% Define absolute target positions for the V-shape relative to the center
+V_shape = [ 0.0, -1.0, -1.0, -2.0, -2.0;  % x offsets
+            0.0,  1.0, -1.0,  2.0, -2.0]*0.6; % y offsets
+
 Delta = zeros(2, N_robots, N_robots);
 for i = 1:N_robots
     for j = 1:N_robots
+        % desired displacement vector from j to i
         Delta(:, i, j) = V_shape(:, i) - V_shape(:, j); 
     end
 end
 
 %% 3. Setup Figure
-figure('Name', 'Milestone 4: Random Forest Gauntlet', 'Position', [50, 50, 1000, 600]);
+figure('Name', 'Milestone 3: V-Formation Navigation', 'Position', [100, 100, 800, 500]);
 plot_environment(obstacles, bounds);
+
+% Draw the vector field in the background
 if plot_field
     plot_vector_field(p_flock_goal, obstacles, params, bounds);
 end 
-plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
 
+plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
 %% 4. Simulation Loop
 for k = 1:N_steps
+    % Calculate Look-ahead points
     p_v_all = zeros(2, N_robots);
     for i = 1:N_robots
         p_v_all(1, i) = q(1, i) + l*cos(q(3, i));
         p_v_all(2, i) = q(2, i) + l*sin(q(3, i));
     end
     
+    % Compute Network
     [A, ~, lambda_2, edges] = compute_laplacian(p_v_all, params.d_th);
     
+    % APF & Dynamics
     dq = zeros(3, N_robots);
     for i = 1:N_robots
         u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, bounds, A, Delta, params);
@@ -92,13 +111,15 @@ for k = 1:N_steps
     q = q + dq * dt;
     
     % Animation
-    if mod(k, 3) == 0 % Skip frames to keep animation fast on the big map
+    if mod(k, 2) == 0 
         cla; 
         plot_environment(obstacles, bounds);
         
+        % ADD THE VECTOR FIELD RE-DRAW HERE
         if plot_field
             plot_vector_field(p_flock_goal, obstacles, params, bounds);
         end
+
         plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
         
         for e = 1:size(edges, 1)
@@ -107,12 +128,12 @@ for k = 1:N_steps
         end
         
         animate_robots(q, l, robot_radius);
-        title(sprintf('Random Forest | \\lambda_2 = %.3f', lambda_2));
+        title(sprintf('V-Formation | \\lambda_2 = %.3f', lambda_2));
         drawnow;
     end
     
     if norm(mean(q(1:2, :), 2) - p_flock_goal) < 0.5
-        disp('Mission Accomplished: Survived the Gauntlet!');
+        disp('Formation Reached Goal Location!');
         break;
     end
 end

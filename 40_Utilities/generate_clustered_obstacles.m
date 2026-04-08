@@ -11,7 +11,7 @@ function obstacles = generate_clustered_obstacles(N, max_dist, start_pos, goal_p
         % Generate a random position within the Danger Zone
         new_x = x_min + (x_max - x_min) * rand();
         new_y = y_min + (y_max - y_min) * rand();
-        new_r = 0.5 + 0.6 * rand(); % Radius between 0.5 and 1.1
+        new_r = 0.2 + 0.35 * rand(); % Radius between 0.5 and 1.1
         
         % 1. Safety Check: Keep them away from the spawn and the goal
         dist_to_start = norm([new_x; new_y] - start_pos);

@@ -1,4 +1,4 @@
-function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A, Delta, params)
+function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, bounds, A, Delta, params)
     p_v = p_v_all(:, i);
     N = size(p_v_all, 2);
     
@@ -15,6 +15,13 @@ function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A,
             min_obs_dist = d;
         end
     end
+    % Check the 4 solid walls (Left, Right, Bottom, Top)
+    x_min = bounds(1); x_max = bounds(2); y_min = bounds(3); y_max = bounds(4);
+    d_walls = [p_v(1) - x_min, x_max - p_v(1), p_v(2) - y_min, y_max - p_v(2)];
+    if min(d_walls) > 0 && min(d_walls) < min_obs_dist
+        min_obs_dist = min(d_walls);
+    end
+
     
     % Scale k_form based on obstacle proximity
     % If far away, squeeze_factor = 1.0. If touching obstacle, squeeze_factor = 0.1
@@ -34,7 +41,7 @@ function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A,
     % ==========================================
     % MECHANIC 2: THE LEADER BRAKE
     % ==========================================
-    if i == 1
+    if true %i == 1
         dynamic_k_att = params.k_att;
         
         % Check how far the most struggling follower is
@@ -69,10 +76,12 @@ function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A,
     F_att = F_form + F_global;
     
     % ==========================================
-    % REPULSIVE & VORTEX FORCES
+    % REPULSIVE & VORTEX FORCES (With Penetration Fail-safes)
     % ==========================================
     F_rep = [0; 0];
     F_vortex = [0; 0];
+    
+    % 1. Circular Obstacles
     for k = 1:size(obstacles, 1)
         c = obstacles(k, 1:2)'; 
         r = obstacles(k, 3);    
@@ -80,16 +89,44 @@ function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A,
         dist_center = norm(p_v - c);
         d = dist_center - r; 
         
-        if d > 0 && d < params.d0
-            grad_d = (p_v - c) / dist_center;
+        grad_d = (p_v - c) / dist_center;
+        
+        if d <= 0.05 % PENETRATION FAIL-SAFE
+            % If they pierce the object, hit them with a massive spring force out
+            F_rep = F_rep + 50.0 * grad_d;
+            % Note: No vortex here. Just push them strictly outward to save them.
+        elseif d < params.d0
             rep_mag = params.k_rep * (1/d - 1/params.d0) * (1/d^2);
             F_rep_k = rep_mag * grad_d;
             
-            R_90 = [0, 1; -1, 0];
+            R_90 = [0, -1; 1, 0];
             F_vortex_k = params.k_vortex * R_90 * F_rep_k;
             
             F_rep = F_rep + F_rep_k;
             F_vortex = F_vortex + F_vortex_k;
+        end
+    end
+    
+    % 2. Map Boundaries (Solid Walls)
+    x_min = bounds(1); x_max = bounds(2); y_min = bounds(3); y_max = bounds(4);
+    d_walls = [p_v(1) - x_min, x_max - p_v(1), p_v(2) - y_min, y_max - p_v(2)];
+    wall_grads = [1, 0; -1, 0; 0, 1; 0, -1]'; % Unit vectors pointing away from the walls
+    
+    for w = 1:4
+        d = d_walls(w);
+        
+        if d <= 0.05 % PENETRATION FAIL-SAFE
+            % If they touch or pierce the wall, bounce them aggressively back inside
+            F_rep = F_rep + 50.0 * wall_grads(:, w);
+        elseif d < params.d0
+            rep_mag = params.k_rep * (1/d - 1/params.d0) * (1/d^2);
+            F_rep_w = rep_mag * wall_grads(:, w);
+            
+            R_90 = [0, -1; 1, 0];
+            F_vortex_w = params.k_vortex * R_90 * F_rep_w;
+            
+            F_rep = F_rep + F_rep_w;
+            F_vortex = F_vortex + F_vortex_w;
         end
     end
     
@@ -108,7 +145,7 @@ function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A,
                 danger_ratio = min(danger_ratio, 0.99); % Prevent pure infinity
                 
                 barrier_mag = tan((pi / 2) * danger_ratio);
-                barrier_mag = min(barrier_mag, 15.0); % The Shock Absorber
+                barrier_mag = min(barrier_mag, 50.0); % The Shock Absorber
                 
                 grad_conn = (p_v - p_vj) / dist_ij;
                 F_conn = F_conn - params.k_conn * barrier_mag * grad_conn;

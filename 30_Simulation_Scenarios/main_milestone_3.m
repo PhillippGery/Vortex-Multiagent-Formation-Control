@@ -27,40 +27,40 @@ w_max = 2.5;
 robot_radius = 0.2;     
 
 % APF Parameters (Normalized Math Baseline)
-params.k_form = 0.8;    % Followers actively drive themselves to hold shape
-params.k_att = 40.5;     % Constant tractor beam for the leader
-params.k_rep = 2.0;     % Solid wall pushback
-params.k_vortex = 1.4;  % Rotational slide to squeeze through gaps
-params.k_conn = 4.0;    % Sturdy bungee cord
 params.d0 = 1.5;        
 params.d_th = 1.8;
-max_allowable_pull = 30.0;
 
-params.k_form   = 1.304;
-params.k_att    = 30.399;
-params.k_rep    = 0.957;
-params.k_vortex = 3.000;
-params.k_conn   = 0.500;
 
-% APF Parameters (Adaptive Architecture)
-params.k_form   = 1.000;
-params.k_att    = 6.000;
-params.k_rep    = 0.786;
-params.k_vortex = 2.170;
-params.k_conn   = 0.500;
+params.k_form   = 80.823;
+params.k_att    = 39.610;
+params.k_rep    = 1.060;
+params.k_vortex = 0.337;
+params.k_conn   = 2.902;
 
-params.d0 = 1.5;        
-params.d_th = 1.8;
+params.k_form   = 26.327;
+params.k_att    = 32.240;
+params.k_rep    = 2.100;
+params.k_vortex = 0.214;
+params.k_conn   = 17.679;
 
 
 
 % Environment: Cluttered warehouse map
-obstacles = [ 0,  1.8, 0.8;
+obstacles = [ 0, 2.8, 0.8;
+              0, 3.8, 0.8;
+              0, 4.8, 0.8;
+              0,  1.4, 0.8;
               %0,  0.0, 0.8;
               0, -1.8, 0.8;
               0, -2.8, 0.8;
               0, -3.8, 0.8;
               0, -4.8, 0.8;];
+
+obstacles = [ 0, 0, 2.8];
+obstacles = [ 1, 1.5, 1.0; 1, -1.5, 1.0;  3, 0.0, 0.8];
+
+
+
 
 
 bounds = [-8, 8, -5, 5];
@@ -104,7 +104,7 @@ for k = 1:N_steps
     % APF & Dynamics
     dq = zeros(3, N_robots);
     for i = 1:N_robots
-        u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A, Delta, params);
+        u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, bounds, A, Delta, params);
         dq(:, i) = unicycle_dynamics(q(:, i), u_v, l, v_max, w_max);
     end
     
