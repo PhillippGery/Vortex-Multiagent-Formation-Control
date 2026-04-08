@@ -3,6 +3,7 @@ clear; clc; close all;
 
 addpath('../20_Core_Math');
 addpath('../40_Utilities');
+addpath('../50_Optimzation');
 
 %% 1. Initialization
 dt = 0.05;              
@@ -25,35 +26,50 @@ v_max = 1.8;
 w_max = 2.5;            
 robot_radius = 0.2;     
 
-% APF Parameters
-params.k_form = 1.5;    % Strong drive to hold formation
-params.k_att = 1.9;     % Weak drive to global goal
-params.k_rep = 1.0;
-params.k_vortex = 0.0;       
-params.k_conn = 0.8; 
+% APF Parameters (Normalized Math Baseline)
+params.k_form = 0.8;    % Followers actively drive themselves to hold shape
+params.k_att = 40.5;     % Constant tractor beam for the leader
+params.k_rep = 2.0;     % Solid wall pushback
+params.k_vortex = 1.4;  % Rotational slide to squeeze through gaps
+params.k_conn = 4.0;    % Sturdy bungee cord
+params.d0 = 1.5;        
+params.d_th = 1.8;
+max_allowable_pull = 30.0;
 
-params.k_form   = 0.705;
-params.k_att    = 1.495;
-params.k_rep    = 0.467;
-params.k_vortex = 2.999;
-params.k_conn   = 0.541;
+params.k_form   = 1.304;
+params.k_att    = 30.399;
+params.k_rep    = 0.957;
+params.k_vortex = 3.000;
+params.k_conn   = 0.500;
+
+% APF Parameters (Adaptive Architecture)
+params.k_form   = 1.000;
+params.k_att    = 6.000;
+params.k_rep    = 0.786;
+params.k_vortex = 2.170;
+params.k_conn   = 0.500;
 
 params.d0 = 1.5;        
-params.d_th = 1.5; 
+params.d_th = 1.8;
+
+
 
 % Environment: Cluttered warehouse map
-obstacles = [ 0,  1.8, 0.8; 
+obstacles = [ 0,  1.8, 0.8;
+              %0,  0.0, 0.8;
               0, -1.8, 0.8;
               0, -2.8, 0.8;
               0, -3.8, 0.8;
-              0, -4.8, 0.8;]; 
+              0, -4.8, 0.8;];
+
+
 bounds = [-8, 8, -5, 5];
 
 %% 2. Define the V-Formation Delta Matrix
 % Node 1 is the tip. Nodes 2,4 are top wing. Nodes 3,5 are bottom wing.
 % Define absolute target positions for the V-shape relative to the center
 V_shape = [ 0.0, -1.0, -1.0, -2.0, -2.0;  % x offsets
-            0.0,  1.0, -1.0,  2.0, -2.0]*0.8; % y offsets
+            0.0,  1.0, -1.0,  2.0, -2.0]*0.6; % y offsets
 
 Delta = zeros(2, N_robots, N_robots);
 for i = 1:N_robots

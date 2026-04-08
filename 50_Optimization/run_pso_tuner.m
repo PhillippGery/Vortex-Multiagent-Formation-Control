@@ -11,10 +11,10 @@ disp('Deploying 30 particles over 50 generations. Please wait...');
 nvars = 5;
 
 % Lower Bounds (We don't want negative gains, and we need non-zero values)
-lb = [0.5,  0.1,  0.1,  0.1,  0.5];
+lb = [0.5,  6.0,  0.1,  0.1,  0.5];
 
 % Upper Bounds (Prevent gains from exploding and breaking the ODE solver)
-ub = [5.0,  1.5,  3.0,  3.0,  3.0];
+ub = [5.0,  40.0,  8.0,  8.0,  8.0];
 
 % PSO Options: 30 parameter combinations, evolved over 50 iterations
 options = optimoptions('particleswarm', ...

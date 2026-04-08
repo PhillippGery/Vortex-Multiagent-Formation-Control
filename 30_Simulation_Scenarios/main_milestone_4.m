@@ -1,0 +1,113 @@
+% main_milestone_4_stress_test.m
+clear; clc; close all;
+
+addpath('../20_Core_Math');
+addpath('../40_Utilities');
+
+%% 1. Initialization - The Expanded Map
+dt = 0.05;              
+t_max = 90; % Give them more time for the larger map             
+N_steps = t_max / dt;
+plot_field = false;
+
+% N=5 Robots: Initialized far left
+q = [-10.0, -10.2, -10.2, -10.4, -10.4;  
+       0.0,   0.5,  -0.5,   1.0,  -1.0;   
+       0.0,   0.0,   0.0,   0.0,   0.0];  
+N_robots = size(q, 2);
+start_pos = [-10; 0];
+
+% The goal is now far right
+p_flock_goal = [10; 0]; 
+
+l = 0.2;                
+v_max = 1.8;            
+w_max = 2.5;            
+robot_radius = 0.2;     
+
+% APF Parameters (The Robust Baseline)
+params.k_form   = 6.000;
+params.k_att    = 20.000;
+params.k_rep    = 8.000;
+params.k_vortex = 4.000;
+params.k_conn   = 6.657;
+
+
+
+% APF Parameters (Adaptive Architecture)
+params.k_form = 3.0;    % Strong baseline formation (will auto-drop to 0.3 near walls)
+params.k_att = 10.8;     % Solid leader drive (will auto-drop to 0 if followers get stuck)
+params.k_rep = 2.0;     
+params.k_vortex = 1.5;       
+params.k_conn = 1.5;    % Sturdy bungee
+params.d0 = 1.5;        
+params.d_th = 1.8;
+ 
+
+% Generate the Random Asteroid Field
+N_obstacles = 13;
+max_obs_dist = 2.5; % The choke-point constraint
+obstacles = generate_clustered_obstacles(N_obstacles, max_obs_dist, start_pos, p_flock_goal);
+bounds = [-12, 12, -8, 8];
+
+%% 2. Define the V-Formation
+V_shape = [ 0.0, -1.0, -1.0, -2.0, -2.0;  
+            0.0,  1.0, -1.0,  2.0, -2.0] * 0.8; 
+Delta = zeros(2, N_robots, N_robots);
+for i = 1:N_robots
+    for j = 1:N_robots
+        Delta(:, i, j) = V_shape(:, i) - V_shape(:, j); 
+    end
+end
+
+%% 3. Setup Figure
+figure('Name', 'Milestone 4: Random Forest Gauntlet', 'Position', [50, 50, 1000, 600]);
+plot_environment(obstacles, bounds);
+if plot_field
+    plot_vector_field(p_flock_goal, obstacles, params, bounds);
+end 
+plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
+
+%% 4. Simulation Loop
+for k = 1:N_steps
+    p_v_all = zeros(2, N_robots);
+    for i = 1:N_robots
+        p_v_all(1, i) = q(1, i) + l*cos(q(3, i));
+        p_v_all(2, i) = q(2, i) + l*sin(q(3, i));
+    end
+    
+    [A, ~, lambda_2, edges] = compute_laplacian(p_v_all, params.d_th);
+    
+    dq = zeros(3, N_robots);
+    for i = 1:N_robots
+        u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, A, Delta, params);
+        dq(:, i) = unicycle_dynamics(q(:, i), u_v, l, v_max, w_max);
+    end
+    
+    q = q + dq * dt;
+    
+    % Animation
+    if mod(k, 3) == 0 % Skip frames to keep animation fast on the big map
+        cla; 
+        plot_environment(obstacles, bounds);
+        
+        if plot_field
+            plot_vector_field(p_flock_goal, obstacles, params, bounds);
+        end
+        plot(p_flock_goal(1), p_flock_goal(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
+        
+        for e = 1:size(edges, 1)
+            r1 = edges(e, 1); r2 = edges(e, 2);
+            plot([q(1,r1), q(1,r2)], [q(2,r1), q(2,r2)], 'g--', 'LineWidth', 1.0);
+        end
+        
+        animate_robots(q, l, robot_radius);
+        title(sprintf('Random Forest | \\lambda_2 = %.3f', lambda_2));
+        drawnow;
+    end
+    
+    if norm(mean(q(1:2, :), 2) - p_flock_goal) < 0.5
+        disp('Mission Accomplished: Survived the Gauntlet!');
+        break;
+    end
+end
