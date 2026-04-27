@@ -41,34 +41,13 @@ function u_v = compute_multiagent_fc_apf(i, p_v_all, p_flock_goal, obstacles, bo
     % ==========================================
     % MECHANIC 2: THE LEADER BRAKE
     % ==========================================
-    if true %i == 1
-        dynamic_k_att = params.k_att;
-        
-        % Check how far the most struggling follower is
-        max_follower_dist = 0;
-        for j = 1:N
-            if A(i, j) == 1
-                dist_ij = norm(p_v - p_v_all(:, j));
-                if dist_ij > max_follower_dist
-                    max_follower_dist = dist_ij;
-                end
-            end
-        end
-        
-        d_safe = 0.85 * params.d_th; 
-        if max_follower_dist > d_safe
-            % If a follower enters the danger zone, scale the leader's engine down to 0
-            brake_factor = (params.d_th - max_follower_dist) / (params.d_th - d_safe);
-            brake_factor = max(0.0, min(1.0, brake_factor)); 
-            dynamic_k_att = params.k_att * brake_factor;
-        end
-        
-        dist_to_goal = norm(p_v - p_flock_goal);
-        if dist_to_goal > 0.1
-            F_global = -dynamic_k_att * (p_v - p_flock_goal) / dist_to_goal;
-        else
-            F_global = [0; 0];
-        end
+    p_target_i = p_flock_goal + Delta(:, i, 1);
+    
+    dist_to_target = norm(p_v - p_target_i);
+    
+    if dist_to_target > 0.1
+        % Constant tractor beam to their specific seat in the formation
+        F_global = -params.k_att * (p_v - p_target_i) / dist_to_target;
     else
         F_global = [0; 0];
     end

@@ -10,7 +10,7 @@ dt = 0.05;
 t_max = 60;             
 N_steps = t_max / dt;
 
-plot_field = true;
+plot_field = false;
 
 
 % N=5 Robots: Initialized in a random cluster
@@ -56,8 +56,8 @@ obstacles = [ 0, 2.8, 0.8;
               0, -3.8, 0.8;
               0, -4.8, 0.8;];
 
-obstacles = [ 0, 0, 2.8];
-obstacles = [ 1, 1.5, 1.0; 1, -1.5, 1.0;  3, 0.0, 0.8];
+%obstacles = [ 0, 0, 2.8];
+%obstacles = [ 1, 1.5, 1.0; 1, -1.5, 1.0;  3, 0.0, 0.8];
 
 
 
