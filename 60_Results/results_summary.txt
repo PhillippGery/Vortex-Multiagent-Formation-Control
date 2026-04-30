@@ -1,9 +1,9 @@
 === SIMULATION RESULTS SUMMARY ===
 
 SCENARIO I - Staggered Gate Field
-  Time to goal:          60.00 s
+  Time to goal:          15.00 s
   Peak formation error:  1.3419 m
-  Final formation error: 0.1911 m
+  Final formation error: 0.2196 m
   Min lambda_2:          0.381966
   lambda_2 ever <= 0:    false
 

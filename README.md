@@ -44,6 +44,8 @@ The controller extends the unified Artificial Potential Field (APF) framework of
 
 Eight fixed circular obstacles (r = 0.8 m) aligned at x = 0 create a narrow central passage in a 16×10 m workspace. The swarm starts at (−6, 0) m and navigates to the goal while squeezing through the gate and re-establishing the V-formation beyond it.
 
+![Scenario I — Staggered Gate Field Animation](60_Results/readme_figs/scenario1_animation.gif)
+
 ![Scenario I — Staggered Gate Field Trajectory](60_Results/readme_figs/fig1_trajectory_gate-1.png)
 
 ---

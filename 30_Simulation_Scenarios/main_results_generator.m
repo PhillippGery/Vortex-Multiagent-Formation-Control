@@ -20,7 +20,7 @@ addpath('/20_Core_Math');
 addpath('/40_Utilities');
 
 % --- Output directories ---
-out_dir    = '../60_Results';
+out_dir    = '60_Results';
 readme_dir = fullfile(out_dir, 'readme_figs');
 if ~exist(out_dir,    'dir'), mkdir(out_dir);    end
 if ~exist(readme_dir, 'dir'), mkdir(readme_dir); end
@@ -61,7 +61,7 @@ end
 fprintf('Running Scenario 1: Staggered Gate Field...\n');
 
 dt1    = 0.05;
-t_max1 = 60;
+t_max1 = 15;
 N_steps1 = t_max1 / dt1;
 
 q1 = [-6, -6, -5, -7, -5;
@@ -85,6 +85,8 @@ obstacles1 = [ 0,  2.8, 0.8;
 form_err1 = NaN(N_steps1, 1);
 lambda2_1 = NaN(N_steps1, 1);
 traj1     = NaN(N_steps1, 2, N_robots); % [step, xy, robot]
+states1   = NaN(N_steps1, 3, N_robots); % [step, [x;y;th], robot] — for GIF
+edges1    = cell(N_steps1, 1);          % communication edges per step
 k1_end    = N_steps1;
 
 for k = 1:N_steps1
@@ -94,8 +96,10 @@ for k = 1:N_steps1
         p_v_all(2,i) = q1(2,i) + l*sin(q1(3,i));
     end
 
-    [A, ~, lam2, ~] = compute_laplacian(p_v_all, params.d_th);
+    [A, ~, lam2, edges_k] = compute_laplacian(p_v_all, params.d_th);
     lambda2_1(k) = lam2;
+    states1(k,:,:) = q1;
+    edges1{k}      = edges_k;
 
     % Formation error
     ferr = 0;
@@ -244,6 +248,40 @@ xlim([bounds1(1) bounds1(2)]); ylim([bounds1(3) bounds1(4)]);
 exportgraphics(fig1, fullfile(out_dir, 'fig1_trajectory_gate.pdf'), 'ContentType', 'vector');
 exportgraphics(fig1, fullfile(out_dir, 'readme_figs', 'fig1_trajectory_gate-1.png'), 'Resolution', 180);
 fprintf('Saved: fig1_trajectory_gate.pdf + .png\n');
+
+% --- Animated GIF: Scenario I (same rendering as live simulation) ---
+gif_path = fullfile(readme_dir, 'scenario1_animation.gif');
+fig_gif  = figure('Visible','off','Position',[50,50,800,500]);
+gif_step = 2; % export every 2nd step → ~25 fps playback feel at DelayTime=0.04
+for k = gif_step:gif_step:k1_end
+    cla;
+    plot_environment(obstacles1, bounds1);
+
+    % Communication edges
+    for e = 1:size(edges1{k}, 1)
+        r1e = edges1{k}(e,1);  r2e = edges1{k}(e,2);
+        plot([states1(k,1,r1e), states1(k,1,r2e)], ...
+             [states1(k,2,r1e), states1(k,2,r2e)], 'g--', 'LineWidth', 1.0);
+    end
+
+    % Goal marker
+    plot(p_goal1(1), p_goal1(2), 'gx', 'MarkerSize', 15, 'LineWidth', 3);
+
+    % Robot bodies (identical call to live simulation)
+    animate_robots(squeeze(states1(k,:,:)), l, robot_radius);
+
+    title(sprintf('V-Formation | \\lambda_2 = %.3f', lambda2_1(k)));
+
+    frame = getframe(fig_gif);
+    [img, cmap] = rgb2ind(frame.cdata, 256);
+    if k == gif_step
+        imwrite(img, cmap, gif_path, 'gif', 'LoopCount',Inf, 'DelayTime',0.04);
+    else
+        imwrite(img, cmap, gif_path, 'gif', 'WriteMode','append', 'DelayTime',0.04);
+    end
+end
+close(fig_gif);
+fprintf('Saved: scenario1_animation.gif\n');
 
 % --- Figure 2: Random Forest ---
 fig2 = figure('Name','Trajectory - Random Forest','Position',[50,50,800,500]);
