@@ -1,0 +1,87 @@
+\begin{thebibliography}{10}
+
+\bibitem{shahriari2016JMLR}
+Bobak Shahriari, Kevin Swersky, Ziyu Wang, Ryan~P. Adams, and Nando de~Freitas.
+\newblock Taking the human out of the loop: A review of {Bayesian}
+  optimization.
+\newblock {\em Proceedings of the IEEE}, 104(1):148--175, 2016.
+
+\bibitem{wang2025RaAS}
+Heyang Wang, Ming Yue, Xu~Sun, and Xudong Zhao.
+\newblock Cooperative {{Formation Control Strategy}} for {{Multi-robot System
+  Based}} on {{APF Algorithm}} and {{Sliding Mode Estimator}}.
+\newblock {\em Robotics and Autonomous Systems}, 193:105075, November 2025.
+
+\bibitem{khatib1986IJRR}
+Oussama Khatib.
+\newblock Real-time obstacle avoidance for manipulators and mobile robots.
+\newblock {\em The International Journal of Robotics Research}, 5(1):90--98,
+  1986.
+
+\bibitem{leonard2001P4ICDCCN}
+N.E. Leonard and E.~Fiorelli.
+\newblock Virtual leaders, artificial potentials and coordinated control of
+  groups.
+\newblock In {\em Proceedings of the 40th {{IEEE Conference}} on {{Decision}}
+  and {{Control}} ({{Cat}}. {{No}}.{{01CH37228}})}, volume~3, pages 2968--2973
+  vol.3, December 2001.
+
+\bibitem{olfatisaber2006TAC}
+Reza Olfati-Saber.
+\newblock Flocking for multi-agent dynamic systems: Algorithms and theory.
+\newblock {\em IEEE Transactions on Automatic Control}, 51(3):401--420, March
+  2006.
+
+\bibitem{kan2012ITAC}
+Zhen Kan, Ashwin~P. Dani, John~M. Shea, and Warren~E. Dixon.
+\newblock Network {{Connectivity Preserving Formation Stabilization}} and
+  {{Obstacle Avoidance}} via a {{Decentralized Controller}}.
+\newblock {\em IEEE Transactions on Automatic Control}, 57(7):1827--1832, July
+  2012.
+
+\bibitem{rimon1992TRA}
+Elon Rimon and Daniel~E. Koditschek.
+\newblock Exact robot navigation using artificial potential functions.
+\newblock {\em IEEE Transactions on Robotics and Automation}, 8(5):501--518,
+  October 1992.
+
+\bibitem{ge2000TRA}
+S.~S. Ge and Y.~J. Cui.
+\newblock New potential functions for mobile robot path planning.
+\newblock {\em IEEE Transactions on Robotics and Automation}, 16(5):615--620,
+  October 2000.
+
+\bibitem{ji2007ITR}
+Meng Ji and Magnus Egerstedt.
+\newblock Distributed {{Coordination Control}} of {{Multiagent Systems While
+  Preserving Connectedness}}.
+\newblock {\em IEEE Transactions on Robotics}, 23(4):693--703, August 2007.
+
+\bibitem{dimarogonas2010ICTA}
+D.V. Dimarogonas and K.H. Johansson.
+\newblock Bounded control of network connectivity in multi-agent systems.
+\newblock {\em IET Control Theory \& Applications}, 4(8):1330--1338, August
+  2010.
+
+\bibitem{panagou2016ITAC}
+Dimitra Panagou, Du{\v s}an~M. Stipanovi{\'c}, and Petros~G. Voulgaris.
+\newblock Distributed {{Coordination Control}} for {{Multi-Robot Networks Using
+  Lyapunov-Like Barrier Functions}}.
+\newblock {\em IEEE Transactions on Automatic Control}, 61(3):617--632, March
+  2016.
+
+\bibitem{do2008TCST}
+K.~D. Do.
+\newblock Formation tracking control of unicycle-type mobile robots with
+  limited sensing ranges.
+\newblock {\em IEEE Transactions on Control Systems Technology},
+  16(3):527--538, May 2008.
+
+\bibitem{oriolo2002TCST}
+Giuseppe Oriolo, Alessandro De~Luca, and Marilena Vendittelli.
+\newblock {WMR} control via dynamic feedback linearization: Design,
+  implementation, and experimental validation.
+\newblock {\em IEEE Transactions on Control Systems Technology},
+  10(6):835--852, November 2002.
+
+\end{thebibliography}

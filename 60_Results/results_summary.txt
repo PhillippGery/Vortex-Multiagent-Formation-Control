@@ -1,0 +1,15 @@
+=== SIMULATION RESULTS SUMMARY ===
+
+SCENARIO I - Staggered Gate Field
+  Time to goal:          60.00 s
+  Peak formation error:  1.3419 m
+  Final formation error: 0.1911 m
+  Min lambda_2:          0.381966
+  lambda_2 ever <= 0:    false
+
+SCENARIO II - Random Forest Gauntlet
+  Time to goal:          90.00 s
+  Peak formation error:  1.0245 m
+  Final formation error: 0.2209 m
+  Min lambda_2:          2.000000
+  lambda_2 ever <= 0:    false
