@@ -9,7 +9,6 @@
   <img src="https://img.shields.io/badge/LaTeX-IEEEtran-008080?logo=latex&logoColor=white" />
   <img src="https://img.shields.io/badge/Platform-Simulation-blue" />
   <img src="https://img.shields.io/badge/Purdue-ICON-CFB991?logoColor=black" />
-  <img src="https://img.shields.io/badge/Course-AAE%20590-lightgrey" />
 </p>
 
 ---
