@@ -207,7 +207,7 @@ main_milestone_4    % Full system: connectivity + vortex field
 
 The full IEEE-format journal paper is included in the repository:
 
-📄 [`10_Documentation/FinalPaper/FInalReport.tex`](10_Documentation/FinalPaper/FInalReport.pdf)
+📄 [`10_Documentation/FinalPaper/FInalReport.pdf`](10_Documentation/FinalPaper/FInalReport.pdf)
 
 **Title:** *Connectivity-Preserving V-Formation Control for Unicycle Multi-Robot Systems via Feedback Linearization and Adaptive Artificial Potential Fields*
 
